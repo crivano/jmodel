@@ -55,7 +55,9 @@ public class Template {
 		sb.append("[/@document]");
 
 		try {
-			String result = FreemarkerIndent.indent(sb.toString());
+			String result = sb.toString();
+			result = freemarkerReposition(result);
+			result = FreemarkerIndent.indent(result);
 			result = result.replaceAll("\\s+\n", "\n");
 			result = result.replace("[/@interview]\n[@document]", "[/@interview]\n\n[@document]");
 			return result;
@@ -155,5 +157,28 @@ public class Template {
 		}
 		s += template.substring(pointer, template.length());
 		return s;
+	}
+
+	final static Pattern patternFreemarkerRepositionUp = Pattern.compile(
+			"(?<html>(?:<p>|<tr>\\s*<td>))\\s*(?<freemarker>\\{\\{fm\\}\\}\\[@(?:if|for) .+?\\{\\{\\/fm\\}\\})",
+			Pattern.MULTILINE);
+
+	final static Pattern patternFreemarkerRepositionDown = Pattern.compile(
+			"(?<freemarker>\\{\\{fm\\}\\}\\[/@(?:if|for)]\\{\\{\\/fm\\}\\})\\s*(?<html>(?:</p>|</td>\\s*</tr>))",
+			Pattern.MULTILINE);
+
+	// Acredito que a melhor estratégia aqui seja utilizar o parser para marcar qual
+	// open se relaciona com qual close. Depois, usar uma expressao regular que
+	// identifique os pares, avalie o que existe antes do open e depois do close e,
+	// faça o reposicionamento do bloco todo. Isso seria bem mais confiável. Mas
+	// também é bem mais difícil. Vou deixar assim por enquanto.
+	public static String freemarkerReposition(String s) {
+		FreemarkerMarker fmm = new FreemarkerMarker(s);
+		s = fmm.addMarks();
+		final String subst = "$2$1";
+
+		s = patternFreemarkerRepositionUp.matcher(s).replaceAll(subst);
+		s = patternFreemarkerRepositionDown.matcher(s).replaceAll(subst);
+		return FreemarkerMarker.removeMarks(s);
 	}
 }

@@ -55,9 +55,9 @@ public class IndentTest extends TestCase {
 	}
 
 	public void testFtlParser() {
-		assertEquals("oi", new FreemarkerMarker("oi").run());
-		assertEquals("{{fm}}[#--comment--]{{/fm}}", new FreemarkerMarker("[#--comment--]").run());
-		assertEquals("{{fm}}[#teste]{{/fm}}", new FreemarkerMarker("[#teste]").run());
+		assertEquals("oi", new FreemarkerMarker("oi").addMarks());
+		assertEquals("{{fm}}[#--comment--]{{/fm}}", new FreemarkerMarker("[#--comment--]").addMarks());
+		assertEquals("{{fm}}[#teste]{{/fm}}", new FreemarkerMarker("[#teste]").addMarks());
 	}
 
 	public void testFMSkip() throws IOException {

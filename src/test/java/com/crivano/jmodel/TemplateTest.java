@@ -87,6 +87,25 @@ public class TemplateTest extends TestCase {
 		String s = Template.markdownToFreemarker(""
 				+ "Country: {field var='country' options='Brazil;Argentina' refresh='country'}\n"
 				+ "\n"
+				+ "You {if country == 'Brazil' depend='country'}didn't{/if} win the WorldCup!");
+		assertEquals(""
+				+ "[@interview]\n"
+				+ "  [@field var='country' options='Brazil;Argentina' refresh='country'/]\n"
+				+ "[/@interview]\n"
+				+ "\n"
+				+ "[@document]\n"
+				+ "  <p>Country:\n"
+				+ "    [@value var='country' options='Brazil;Argentina' refresh='country'/]</p>\n"
+				+ "  <p>You\n"
+				+ "    [@if country == 'Brazil'  depend='country']didn't\n"
+				+ "    [/@if] win the WorldCup!</p>\n"
+				+ "[/@document]", s);
+	}
+
+	public void testIfRepositionAroundParagraph() throws Exception {
+		String s = Template.markdownToFreemarker(""
+				+ "Country: {field var='country' options='Brazil;Argentina' refresh='country'}\n"
+				+ "\n"
 				+ "{if country == 'Brazil' depend='country'}State: {field var='state' options='Rio de Janeiro;São Paulo'}{/if}");
 		assertEquals(""
 				+ "[@interview]\n"
@@ -97,10 +116,10 @@ public class TemplateTest extends TestCase {
 				+ "[@document]\n"
 				+ "  <p>Country:\n"
 				+ "    [@value var='country' options='Brazil;Argentina' refresh='country'/]</p>\n"
-				+ "  <p>\n"
-				+ "    [@if country == 'Brazil'  depend='country']State:\n"
-				+ "      [@value var='state' options='Rio de Janeiro;São Paulo'/]\n"
-				+ "    [/@if]</p>\n"
+				+ "  [@if country == 'Brazil'  depend='country']\n"
+				+ "    <p>State:\n"
+				+ "      [@value var='state' options='Rio de Janeiro;São Paulo'/]</p>\n"
+				+ "  [/@if]\n"
 				+ "[/@document]", s);
 	}
 

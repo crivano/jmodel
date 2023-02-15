@@ -1,6 +1,13 @@
 package com.crivano.jmodel;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class FreemarkerMarker {
+
+	static public Pattern patternFMM = Pattern.compile("\\{\\{fm\\}\\}(.*?)\\{\\{\\/fm\\}\\}", Pattern.DOTALL);
+
 	private String template;
 	private int pos = 0;
 	private int len = 0;
@@ -17,7 +24,7 @@ public class FreemarkerMarker {
 		return template.charAt(pos + i) == c;
 	}
 
-	public String run() {
+	public String addMarks() {
 		StringBuffer sb = new StringBuffer();
 		int state = 0;
 		while (pos < len) {
@@ -123,6 +130,17 @@ public class FreemarkerMarker {
 			}
 			pos++;
 		}
+	}
+
+	public static String removeMarks(String marked) {
+		Matcher matcher = patternFMM.matcher(marked);
+		StringBuffer output = new StringBuffer();
+		while (matcher.find()) {
+			String ftl = matcher.group(1);
+			matcher.appendReplacement(output, ftl);
+		}
+		matcher.appendTail(output);
+		return output.toString();
 	}
 
 }

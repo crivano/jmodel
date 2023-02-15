@@ -18,11 +18,11 @@ public class FreemarkerIndent {
 
 	static Pattern patternRemoveBodyIndent = Pattern.compile("^    (.*)$", Pattern.MULTILINE);
 
-	static Pattern patternFMM = Pattern.compile("\\{\\{fm\\}\\}(.*?)\\{\\{\\/fm\\}\\}", Pattern.DOTALL);
+	static Pattern patternUnmarshall = Pattern
+			.compile("</?fm:indent\\s?/?>\\s*</?fm:cmd n=\"(\\w+)\" kind=\"(\\w+)\"\\s?/>");
 
-	static Pattern patternUnmarshall = Pattern.compile("</?fm:indent\\s?/?>\\s*</?fm:cmd n=\"(\\w+)\" kind=\"(\\w+)\"\\s?/>");
-
-	static Pattern patternUnindent = Pattern.compile("  (<fm:indent\\s?/>\\s*</?fm:cmd n=\"(\\w+)\" kind=\"unindent\"\\s?/>)");
+	static Pattern patternUnindent = Pattern
+			.compile("  (<fm:indent\\s?/>\\s*</?fm:cmd n=\"(\\w+)\" kind=\"unindent\"\\s?/>)");
 
 	static Pattern patternAfterOpen = Pattern
 			.compile("^(\\s*)(<!--fm-(?:open|selfcontained|unindent)=\"\\d+\"-->)\\s*([^\\s].*?)$", Pattern.MULTILINE);
@@ -56,10 +56,10 @@ public class FreemarkerIndent {
 	}
 
 	public static String convertFtl2Html(String input, List<String> lftl) {
-		String fmm = new FreemarkerMarker(input).run();
+		String fmm = new FreemarkerMarker(input).addMarks();
 
 		StringBuffer output = new StringBuffer();
-		Matcher matcher = patternFMM.matcher(fmm);
+		Matcher matcher = FreemarkerMarker.patternFMM.matcher(fmm);
 		while (matcher.find()) {
 			String ftl = matcher.group(1);
 			lftl.add(ftl);
