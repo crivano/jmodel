@@ -26,7 +26,7 @@ public class TemplateTest extends TestCase {
 	}
 
 	public void testOneField() throws Exception {
-		String s = Template.markdownToFreemarker("Hi [@field var='name'/]!");
+		String s = Template.markdownToFreemarker(null, "Hi [@field var='name'/]!");
 		assertEquals(""
 				+ "[@interview]\n"
 				+ "  [@field var='name'/]\n"
@@ -37,90 +37,4 @@ public class TemplateTest extends TestCase {
 				+ "    [@value var='name'/]!</p>\n"
 				+ "[/@document]", s);
 	}
-
-	public void testOneAutoField() throws Exception {
-		String s = Template.markdownToFreemarker("Hi {name}!");
-		assertEquals(""
-				+ "[@interview]\n"
-				+ "  [@field var='name'/]\n"
-				+ "[/@interview]\n"
-				+ "\n"
-				+ "[@document]\n"
-				+ "  <p>Hi\n"
-				+ "    [@value var='name'/]!</p>\n"
-				+ "[/@document]", s);
-	}
-
-	public void testOneAutoFieldWithOptions() throws Exception {
-		String s = Template.markdownToFreemarker("Hi {field var='name' options='Foo;Bar'}!");
-		assertEquals(""
-				+ "[@interview]\n"
-				+ "  [@field var='name' options='Foo;Bar'/]\n"
-				+ "[/@interview]\n"
-				+ "\n"
-				+ "[@document]\n"
-				+ "  <p>Hi\n"
-				+ "    [@value var='name' options='Foo;Bar'/]!</p>\n"
-				+ "[/@document]", s);
-	}
-
-	public void testTwoAutoFields() throws Exception {
-		String s = Template.markdownToFreemarker(""
-				+ "Country: {field var='country' optios='Brazil;Argentina' refresh='country'}\n"
-				+ "\n"
-				+ "Gender: {field var='gender' optios='Male;Female' refresh='gender'}");
-		assertEquals(""
-				+ "[@interview]\n"
-				+ "  [@field var='country' optios='Brazil;Argentina' refresh='country'/]\n"
-				+ "  [@field var='gender' optios='Male;Female' refresh='gender'/]\n"
-				+ "[/@interview]\n"
-				+ "\n"
-				+ "[@document]\n"
-				+ "  <p>Country:\n"
-				+ "    [@value var='country' optios='Brazil;Argentina' refresh='country'/]</p>\n"
-				+ "  <p>Gender:\n"
-				+ "    [@value var='gender' optios='Male;Female' refresh='gender'/]</p>\n"
-				+ "[/@document]", s);
-	}
-
-	public void testIf() throws Exception {
-		String s = Template.markdownToFreemarker(""
-				+ "Country: {field var='country' options='Brazil;Argentina' refresh='country'}\n"
-				+ "\n"
-				+ "You {if country == 'Brazil' depend='country'}didn't{/if} win the WorldCup!");
-		assertEquals(""
-				+ "[@interview]\n"
-				+ "  [@field var='country' options='Brazil;Argentina' refresh='country'/]\n"
-				+ "[/@interview]\n"
-				+ "\n"
-				+ "[@document]\n"
-				+ "  <p>Country:\n"
-				+ "    [@value var='country' options='Brazil;Argentina' refresh='country'/]</p>\n"
-				+ "  <p>You\n"
-				+ "    [@if country == 'Brazil'  depend='country']didn't\n"
-				+ "    [/@if] win the WorldCup!</p>\n"
-				+ "[/@document]", s);
-	}
-
-	public void testIfRepositionAroundParagraph() throws Exception {
-		String s = Template.markdownToFreemarker(""
-				+ "Country: {field var='country' options='Brazil;Argentina' refresh='country'}\n"
-				+ "\n"
-				+ "{if country == 'Brazil' depend='country'}State: {field var='state' options='Rio de Janeiro;São Paulo'}{/if}");
-		assertEquals(""
-				+ "[@interview]\n"
-				+ "  [@field var='country' options='Brazil;Argentina' refresh='country'/]\n"
-				+ "  [@field var='state' options='Rio de Janeiro;São Paulo'/]\n"
-				+ "[/@interview]\n"
-				+ "\n"
-				+ "[@document]\n"
-				+ "  <p>Country:\n"
-				+ "    [@value var='country' options='Brazil;Argentina' refresh='country'/]</p>\n"
-				+ "  [@if country == 'Brazil'  depend='country']\n"
-				+ "    <p>State:\n"
-				+ "      [@value var='state' options='Rio de Janeiro;São Paulo'/]</p>\n"
-				+ "  [/@if]\n"
-				+ "[/@document]", s);
-	}
-
 }

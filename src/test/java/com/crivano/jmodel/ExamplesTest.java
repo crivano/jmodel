@@ -1,64 +1,108 @@
-/*******************************************************************************
- * Copyright (c) 2006 - 2011 SJRJ.
- * 
- *     This file is part of SIGA.
- * 
- *     SIGA is free software: you can redistribute it and/or modify
- *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
- *     (at your option) any later version.
- * 
- *     SIGA is distributed in the hope that it will be useful,
- *     but WITHOUT ANY WARRANTY; without even the implied warranty of
- *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *     GNU General Public License for more details.
- * 
- *     You should have received a copy of the GNU General Public License
- *     along with SIGA.  If not, see <http://www.gnu.org/licenses/>.
- ******************************************************************************/
 package com.crivano.jmodel;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class ExamplesTest extends TestCase {
+import junit.framework.ComparisonFailure;
 
-	public ExamplesTest() throws Exception {
-	}
+@RunWith(Parameterized.class)
+public class ExamplesTest {
+	@Parameters(name = "{index}: {1} ({0})")
+	public static Iterable<Object[]> data() throws IOException {
+		List<Object[]> d = new ArrayList<>();
 
-	public void testAllExamples() throws Exception {
+		String filename = "examples.md";
 		try (InputStream stream = ExamplesTest.class.getClassLoader()
-				.getResourceAsStream("com/crivano/jmodel/examples.md")) {
+				.getResourceAsStream("com/crivano/jmodel/" + filename)) {
 			String examples = Utils.convertStreamToString(stream);
 			String[] lines = examples.split("\n");
-			String md = null;
+			String title = null;
+			String mdDescription = null;
+			String mdDocument = null;
 			String fm = null;
+			int i = 1;
+			int ln = 0;
 			for (String s : lines) {
+				if (s.startsWith("### "))
+					title = s.substring(4).trim();
+
 				switch (s.toLowerCase().trim()) {
+				case "```markdown description":
+					mdDescription = "";
+					break;
 				case "```markdown":
-					md = "";
+				case "```markdown document":
+					mdDocument = "";
 					break;
 				case "```freemarker":
 					fm = "";
+					ln = i + 1;
 					break;
 				case "```":
-					if (md != null && fm != null) {
-						md = md.replace("\r", "");
+					if (mdDocument != null && fm != null) {
+						if (mdDescription != null)
+							mdDescription = mdDescription.replace("\r", "");
+						mdDocument = mdDocument.replace("\r", "");
 						fm = fm.replace("\r", "");
-						String converted = Template.markdownToFreemarker(md);
-						assertEquals(fm, converted);
-						md = null;
+						String filenameAndLineNumber = filename + ":" + ln;
+
+						Object o[] = new Object[] { filenameAndLineNumber, title, mdDescription, mdDocument, fm };
+						d.add(o);
+
+						mdDescription = null;
+						mdDocument = null;
 						fm = null;
+						title = null;
 					}
 					break;
 				default:
 					if (fm != null)
 						fm += (fm.isEmpty() ? "" : "\n") + s;
-					else if (md != null)
-						md += (md.isEmpty() ? "" : "\n") + s;
+					else if (mdDocument != null)
+						mdDocument += (mdDocument.isEmpty() ? "" : "\n") + s;
+					else if (mdDescription != null)
+						mdDescription += (mdDescription.isEmpty() ? "" : "\n") + s;
 				}
+				i++;
 			}
+
+		}
+		return d;
+	}
+
+	private String filenameAndLineNumber;
+	private String title;
+	private String mdDescription;
+	private String mdDocument;
+	private String fm;
+
+	public ExamplesTest(String filenameAndLineNumber, String title, String mdDescription, String mdDocument,
+			String fm) {
+		this.filenameAndLineNumber = filenameAndLineNumber;
+		this.title = title;
+		this.mdDescription = mdDescription;
+		this.mdDocument = mdDocument;
+		this.fm = fm;
+	}
+
+	@Test
+	public void test() {
+		String converted = Template.markdownToFreemarker(mdDescription, mdDocument);
+		try {
+			String suffix = "\n\n---\nat " + filenameAndLineNumber;
+			assertEquals(fm + suffix, converted + suffix);
+		} catch (ComparisonFailure e) {
+			System.err.println(e.getClass().getName() + " at (" + filenameAndLineNumber + ")");
+			throw e;
 		}
 	}
 }

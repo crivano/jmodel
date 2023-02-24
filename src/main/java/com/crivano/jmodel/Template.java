@@ -3,8 +3,9 @@ package com.crivano.jmodel;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.vladsch.flexmark.ext.tables.TablesExtension;
@@ -15,7 +16,19 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 
 public class Template {
 
-	public static String markdownToFreemarker(String input) {
+	private static final String MARKDOWN_DOCUMENT = "<!-- MARKDOWN-DOCUMENT -->";
+
+	private static final String MARKDOWN_DESCRIPTION = "<!-- MARKDOWN-DESCRIPTION -->";
+
+	public static String markdownToFreemarker(String mdDescription, String mdDocument) {
+
+		if (mdDescription == null)
+			mdDescription = "";
+		if (mdDocument == null)
+			mdDocument = "";
+
+		String input = MARKDOWN_DESCRIPTION + "\n\n" + mdDescription + "\n\n" + MARKDOWN_DOCUMENT + "\n\n"
+				+ mdDocument;
 
 		String mdWithCommandsInFreemarker = processCommands(input, (cmd) -> {
 			String comando = cmd.command;
@@ -29,17 +42,10 @@ public class Template {
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("[@interview]");
-		String PREFIX_CAMPO = "[@field ";
-		for (String s : lftl) {
-			if (s.startsWith(PREFIX_CAMPO)) {
-				sb.append("\n  ");
-				sb.append(s);
-			}
-		}
-		sb.append("\n[/@interview]");
+		sb.append(buildInterview(lftl));
 
 		// Change "campo" to "valor"
+		String PREFIX_CAMPO = "[@field ";
 		for (int i = 0; i < lftl.size(); i++) {
 			if (lftl.get(i).startsWith(PREFIX_CAMPO)) {
 				lftl.set(i, "[@value " + lftl.get(i).substring(PREFIX_CAMPO.length()));
@@ -50,20 +56,70 @@ public class Template {
 
 		String ftlInHtml = markdownToHtml(ftlInMarkdown);
 
-		sb.append("\n\n[@document]\n");
-		sb.append(ftlInHtml);
-		sb.append("[/@document]");
+		// Split de HTML to identify the description and the document
+		String html[] = ftlInHtml.split(MARKDOWN_DOCUMENT);
+		html[0] = Utils.sorn(html[0].replace(MARKDOWN_DESCRIPTION, ""));
+		html[1] = Utils.sorn(html[1]);
+
+		if (html[0] != null) {
+			sb.append("\n\n[@description]\n");
+			sb.append(html[0]);
+			sb.append("[/@description]");
+		}
+		if (html[1] != null) {
+			sb.append("\n\n[@document]\n");
+			sb.append(html[1]);
+			sb.append("[/@document]");
+		}
 
 		try {
 			String result = sb.toString();
 			result = freemarkerReposition(result);
 			result = FreemarkerIndent.indent(result);
 			result = result.replaceAll("\\s+\n", "\n");
-			result = result.replace("[/@interview]\n[@document]", "[/@interview]\n\n[@document]");
+			result = result.replace("]\n[@description]", "]\n\n[@description]");
+			result = result.replace("]\n[@document]", "]\n\n[@document]");
 			return result;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static String buildInterview(List<String> lftl) {
+		StringBuilder sb = new StringBuilder();
+
+		Set<String> fields = new HashSet<>();
+		sb.append("[@interview]");
+		String INTERVIEW_COMMANDS[] = new String[] { "[@field ", "[@if ", "[/@if]", "[@for ", "[/@for]" };
+		for (int i = 0; i < lftl.size(); i++) {
+			String s = lftl.get(i);
+			String next = (i < lftl.size() - 1) ? lftl.get(i + 1) : null;
+			for (String prefix : INTERVIEW_COMMANDS) {
+
+				// Skip if field already seen
+				Command cmd = new Command(s);
+				String fieldVarAndIndex = cmd.getFieldVarAndIndex();
+				if (fieldVarAndIndex != null)
+					if (fields.contains(fieldVarAndIndex))
+						continue;
+					else
+						fields.add(fieldVarAndIndex);
+
+				// Skip empty IFs and FORs
+				if (s.startsWith("[@if ") && "[/@if]".equals(next)
+						|| s.startsWith("[@for ") && "[/@for]".equals(next)) {
+					i++;
+					continue;
+				}
+
+				if (s.startsWith(prefix)) {
+					sb.append("\n  ");
+					sb.append(s);
+				}
+			}
+		}
+		sb.append("\n[/@interview]");
+		return sb.toString();
 	}
 
 	private static String markdownToHtml(String input) {
@@ -160,11 +216,11 @@ public class Template {
 	}
 
 	final static Pattern patternFreemarkerRepositionUp = Pattern.compile(
-			"(?<html>(?:<p>|<tr>\\s*<td>))\\s*(?<freemarker>\\{\\{fm\\}\\}\\[@(?:if|for) .+?\\{\\{\\/fm\\}\\})",
+			"\\s*(?<html>(?:<p>|<tr>\\s*<td>))\\s*(?<freemarker>\\{\\{fm\\}\\}\\[@(?:if|for) .+?\\{\\{\\/fm\\}\\})\\s*",
 			Pattern.MULTILINE);
 
 	final static Pattern patternFreemarkerRepositionDown = Pattern.compile(
-			"(?<freemarker>\\{\\{fm\\}\\}\\[/@(?:if|for)]\\{\\{\\/fm\\}\\})\\s*(?<html>(?:</p>|</td>\\s*</tr>))",
+			"\\s*(?<freemarker>\\{\\{fm\\}\\}\\[/@(?:if|for)]\\{\\{\\/fm\\}\\})\\s*(?<html>(?:</p>|</td>\\s*</tr>))\\s*",
 			Pattern.MULTILINE);
 
 	// Acredito que a melhor estratégia aqui seja utilizar o parser para marcar qual
