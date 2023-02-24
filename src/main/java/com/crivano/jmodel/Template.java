@@ -115,6 +115,7 @@ public class Template {
 				if (s.startsWith(prefix)) {
 					sb.append("\n  ");
 					sb.append(s);
+					continue;
 				}
 			}
 		}

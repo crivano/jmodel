@@ -59,6 +59,25 @@ Hi {field var='name' options='Foo;Bar'}!
 [/@document]
 ```
 
+### Single selection auto-field
+
+A single selection field:
+
+```Markdown
+Hi {name options='Foo;Bar'}!
+```
+
+```FreeMarker
+[@interview]
+  [@field var='name' options='Foo;Bar'/]
+[/@interview]
+
+[@document]
+  <p>Hi
+    [@value var='name' options='Foo;Bar'/]!</p>
+[/@document]
+```
+
 ### Two selection fields
 
 Two selection fields:
@@ -83,6 +102,26 @@ Gender: {field var='gender' optios='Male;Female' refresh='gender'}
 [/@document]
 ```
 
+### Print command
+
+One auto-field and one print command:
+
+```Markdown
+I live in {country} and I love {print country}.
+```
+
+```FreeMarker
+[@interview]
+  [@field var='country'/]
+[/@interview]
+
+[@document]
+  <p>I live in
+    [@value var='country'/] and I love
+    [@print country/].</p>
+[/@document]
+```
+
 ### If not repositioned
 
 An If statement that does not require repositioning:
@@ -102,7 +141,7 @@ You {if country == 'Brazil' depend='country'}didn't{/if} win the WorldCup!
   <p>Country:
     [@value var='country' options='Brazil;Argentina' refresh='country'/]</p>
   <p>You
-    [@if country == 'Brazil'  depend='country']didn't
+    [@if country == 'Brazil' depend='country']didn't
     [/@if] win the WorldCup!</p>
 [/@document]
 ```
@@ -121,7 +160,7 @@ Country: {field var='country' options='Brazil;Argentina' refresh='country'}
 ```FreeMarker
 [@interview]
   [@field var='country' options='Brazil;Argentina' refresh='country'/]
-  [@if country == 'Brazil'  depend='country']
+  [@if country == 'Brazil' depend='country']
     [@field var='state' options='Rio de Janeiro;São Paulo'/]
   [/@if]
 [/@interview]
@@ -129,7 +168,7 @@ Country: {field var='country' options='Brazil;Argentina' refresh='country'}
 [@document]
   <p>Country:
     [@value var='country' options='Brazil;Argentina' refresh='country'/]</p>
-  [@if country == 'Brazil'  depend='country']
+  [@if country == 'Brazil' depend='country']
     <p>State:
       [@value var='state' options='Rio de Janeiro;São Paulo'/]</p>
   [/@if]
@@ -174,7 +213,7 @@ Name: {field var='name' index=num}
 ```FreeMarker
 [@interview]
   [@field var='num' options='1;2;3;4;5' refresh='num'/]
-  [@for num  depend='num']
+  [@for num depend='num']
     [@field var='name' index=num/]
   [/@for]
 [/@interview]
@@ -182,7 +221,7 @@ Name: {field var='name' index=num}
 [@document]
   <p>Number of people:
     [@value var='num' options='1;2;3;4;5' refresh='num'/]</p>
-  [@for num  depend='num']
+  [@for num depend='num']
     <p>Name:
       [@value var='name' index=num/]</p>
   [/@for]
@@ -206,7 +245,7 @@ Name again: {field var='name' index=num}
 ```FreeMarker
 [@interview]
   [@field var='num' options='1;2;3;4;5' refresh='num'/]
-  [@for num  depend='num']
+  [@for num depend='num']
     [@field var='name' index=num/]
   [/@for]
 [/@interview]
@@ -214,7 +253,7 @@ Name again: {field var='name' index=num}
 [@document]
   <p>Number of people:
     [@value var='num' options='1;2;3;4;5' refresh='num'/]</p>
-  [@for num  depend='num']
+  [@for num depend='num']
     <p>Name:
       [@value var='name' index=num/]</p>
     <p>Name again:

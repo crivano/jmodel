@@ -1,19 +1,24 @@
 package com.crivano.jmodel;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Command {
 	private static Pattern patternTemplateCommand = Pattern.compile(
-			"\\{(?<command>(?>field |print |if |/if|for |/for))?(?<expr>.*?)(?<params>\\s*[a-zA-Z0-9_]+\\s*=\\s*[^=].*)?\\}$");
+			"\\{(?<command>/?[a-zA-Z][a-zA-Z0-9_]*)?(?<expr>.*?)(?<params>\\s*[a-zA-Z0-9_]+\\s*=\\s*[^=].*)?\\}$");
 
 	private static Pattern patternFreemarkerCommand = Pattern.compile(
 			"^\\[(?<command>(?>/?@[a-z]+))(?<expr>\\s+.*?)?(?<params>\\s*[a-zA-Z0-9_]+\\s*=\\s*[^=].*)?\\]$");
 
 	private static Pattern patternSplitParams = Pattern.compile(
 			"\\s*(?<name>[a-z][a-z0-9]+)\\s*=\\s*(?<value>.+?)\\s*(?=$|[a-z][a-z0-9]+\\s*=)");
+
+	private static Set<String> commands = new HashSet<>(Arrays.asList("field", "print", "if", "/if", "for", "/for"));
 
 	String command;
 	String expr;
@@ -25,14 +30,22 @@ public class Command {
 		Matcher m = patternTemplateCommand.matcher(s);
 		if (m.find()) {
 			command = Utils.sorn(m.group("command"));
-			if (command != null) {
-				if (command.startsWith("/"))
-					command = "/@" + command.substring(1);
-				else
-					command = "@" + command;
-			}
 			expr = Utils.sorn(m.group("expr"));
 			params = Utils.sorn(m.group("params"));
+
+			if (command != null) {
+				if (commands.contains(command)) {
+					if (command.startsWith("/"))
+						command = "/@" + command.substring(1);
+					else
+						command = "@" + command;
+				} else {
+					var = command;
+					command = "@field";
+					expr = null;
+					params = "var='" + this.var + "'" + (params != null ? " " + params : "");
+				}
+			}
 		} else {
 			m = patternFreemarkerCommand.matcher(s);
 			if (m.find()) {
@@ -41,19 +54,20 @@ public class Command {
 				params = Utils.sorn(m.group("params"));
 			}
 		}
-		if (command == null && expr != null && params == null) {
-			if (expr.matches("^[a-zA-Z][a-zA-Z0-9_]*$")) {
-				// A single variable identifier should be mapped to a "campo" command
-				command = "@field";
-				var = expr;
-				expr = null;
-				params = "var='" + this.var + "'";
-			} else {
-				// A single expression should be mapped to a "escrever" command
-				command = "@print";
-				params = "value=" + expr;
-			}
-		}
+
+//		if (command == null && expr != null && params == null) {
+//			if (expr.matches("^[a-zA-Z][a-zA-Z0-9_]*$")) {
+//				// A single variable identifier should be mapped to a "campo" command
+//				command = "@field";
+//				var = expr;
+//				expr = null;
+//				params = "var='" + this.var + "'";
+//			} else {
+//				// A single expression should be mapped to a "escrever" command
+//				command = "@print";
+//				params = "value=" + expr;
+//			}
+//		}
 
 		mapParams = new TreeMap<>();
 		if (params != null) {
@@ -102,7 +116,6 @@ public class Command {
 		if (expr != null) {
 			sb.append(" ");
 			sb.append(expr);
-			sb.append(" ");
 		}
 		if (params != null) {
 			sb.append(" ");
