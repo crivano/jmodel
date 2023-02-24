@@ -180,7 +180,7 @@ Country: {field var='country' options='Brazil;Argentina' refresh='country'}
 Duplicated fields should be omitted from the interview:
 
 ```Markdown
-Me, {name}, state that ...
+I, {name}, born in ...
 
 Signed by: {name}
 ```
@@ -191,8 +191,8 @@ Signed by: {name}
 [/@interview]
 
 [@document]
-  <p>Me,
-    [@value var='name'/], state that ...</p>
+  <p>I,
+    [@value var='name'/], born in ...</p>
   <p>Signed by:
     [@value var='name'/]</p>
 [/@document]
