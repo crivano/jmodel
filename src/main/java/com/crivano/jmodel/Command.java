@@ -18,7 +18,7 @@ public class Command {
 	private static Pattern patternSplitParams = Pattern.compile(
 			"\\s*(?<name>[a-z][a-z0-9]+)\\s*=\\s*(?<value>.+?)\\s*(?=$|[a-z][a-z0-9]+\\s*=)");
 
-	private static Set<String> commands = new HashSet<>(Arrays.asList("field", "print", "if", "/if", "for", "/for"));
+	private static Set<String> commands = new HashSet<>(Arrays.asList("field", "print", "if", "/if", "for", "/for", "set"));
 
 	String command;
 	String expr;
@@ -114,13 +114,17 @@ public class Command {
 			sb.append(command);
 		}
 		if (expr != null) {
-			sb.append(" ");
+			sb.append(" expr=(");
 			sb.append(expr);
+			sb.append(")");
 		}
 		if (params != null) {
 			sb.append(" ");
 			sb.append(params);
 		}
+
+		if ("@for".equals(command))
+			sb.append(" ; index");
 		sb.append(isSelfContained() ? "/]" : "]");
 		return sb.toString();
 	}

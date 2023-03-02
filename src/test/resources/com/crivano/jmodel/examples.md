@@ -118,7 +118,7 @@ I live in {country} and I love {print country}.
 [@document]
   <p>I live in
     [@value var='country'/] and I love
-    [@print country/].</p>
+    [@print expr=(country)/].</p>
 [/@document]
 ```
 
@@ -141,7 +141,7 @@ You {if country == 'Brazil' depend='country'}didn't{/if} win the WorldCup!
   <p>Country:
     [@value var='country' options='Brazil;Argentina' refresh='country'/]</p>
   <p>You
-    [@if country == 'Brazil' depend='country']didn't
+    [@if expr=(country == 'Brazil') depend='country']didn't
     [/@if] win the WorldCup!</p>
 [/@document]
 ```
@@ -160,7 +160,7 @@ Country: {field var='country' options='Brazil;Argentina' refresh='country'}
 ```FreeMarker
 [@interview]
   [@field var='country' options='Brazil;Argentina' refresh='country'/]
-  [@if country == 'Brazil' depend='country']
+  [@if expr=(country == 'Brazil') depend='country']
     [@field var='state' options='Rio de Janeiro;São Paulo'/]
   [/@if]
 [/@interview]
@@ -168,7 +168,7 @@ Country: {field var='country' options='Brazil;Argentina' refresh='country'}
 [@document]
   <p>Country:
     [@value var='country' options='Brazil;Argentina' refresh='country'/]</p>
-  [@if country == 'Brazil' depend='country']
+  [@if expr=(country == 'Brazil') depend='country']
     <p>State:
       [@value var='state' options='Rio de Janeiro;São Paulo'/]</p>
   [/@if]
@@ -206,24 +206,24 @@ A For statement exemple that asks the number of people, then the name of each pe
 Number of people: {field var='num' options='1;2;3;4;5' refresh='num'}
 
 {for num depend='num'}
-Name: {field var='name' index=num}
+Name: {field var='name' index=index}
 {/for}
 ```
 
 ```FreeMarker
 [@interview]
   [@field var='num' options='1;2;3;4;5' refresh='num'/]
-  [@for num depend='num']
-    [@field var='name' index=num/]
+  [@for expr=(num) depend='num' ; index]
+    [@field var='name' index=index/]
   [/@for]
 [/@interview]
 
 [@document]
   <p>Number of people:
     [@value var='num' options='1;2;3;4;5' refresh='num'/]</p>
-  [@for num depend='num']
+  [@for expr=(num) depend='num' ; index]
     <p>Name:
-      [@value var='name' index=num/]</p>
+      [@value var='name' index=index/]</p>
   [/@for]
 [/@document]
 ```
@@ -238,29 +238,55 @@ Number of people: {field var='num' options='1;2;3;4;5' refresh='num'}
 {for num depend='num'}
 Name: {field var='name' index=num}
 
-Name again: {field var='name' index=num}
+Name again: {field var='name' index=index}
 {/for}
 ```
 
 ```FreeMarker
 [@interview]
   [@field var='num' options='1;2;3;4;5' refresh='num'/]
-  [@for num depend='num']
+  [@for expr=(num) depend='num' ; index]
     [@field var='name' index=num/]
+    [@field var='name' index=index/]
   [/@for]
 [/@interview]
 
 [@document]
   <p>Number of people:
     [@value var='num' options='1;2;3;4;5' refresh='num'/]</p>
-  [@for num depend='num']
+  [@for expr=(num) depend='num' ; index]
     <p>Name:
       [@value var='name' index=num/]</p>
     <p>Name again:
-      [@value var='name' index=num/]</p>
+      [@value var='name' index=index/]</p>
   [/@for]
 [/@document]
 ```
+
+### Simple model with variable assigns
+
+In certain situations it will be necessary to set global variables that can be used to customize the ```@document``` macro. For instance,
+one may use a variable to choose a special format for the document, like Memorandum or Letter.
+
+```Markdown Document
+{set format='LETTER'}
+
+Hi {name}!
+```
+
+```FreeMarker
+[#assign format='LETTER'/]
+
+[@interview]
+  [@field var='name'/]
+[/@interview]
+
+[@document]
+  <p>Hi
+    [@value var='name'/]!</p>
+[/@document]
+```
+
 
 ## Models With Description
 

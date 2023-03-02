@@ -42,6 +42,7 @@ public class Template {
 
 		StringBuilder sb = new StringBuilder();
 
+		sb.append(buildHead(lftl));
 		sb.append(buildInterview(lftl));
 
 		// Change "campo" to "valor"
@@ -77,12 +78,37 @@ public class Template {
 			result = freemarkerReposition(result);
 			result = FreemarkerIndent.indent(result);
 			result = result.replaceAll("\\s+\n", "\n");
+			result = result.replace("]\n[@interview]", "]\n\n[@interview]");
 			result = result.replace("]\n[@description]", "]\n\n[@description]");
 			result = result.replace("]\n[@document]", "]\n\n[@document]");
 			return result;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static String buildHead(List<String> lftl) {
+		StringBuilder sb = new StringBuilder();
+
+		Set<String> fields = new HashSet<>();
+		String HEAD_COMMANDS[] = new String[] { "[@set " };
+		for (int i = 0; i < lftl.size(); i++) {
+			String s = lftl.get(i);
+			String next = (i < lftl.size() - 1) ? lftl.get(i + 1) : null;
+			for (String prefix : HEAD_COMMANDS) {
+
+				if (s.startsWith(prefix)) {
+					sb.append("\n  ");
+					if (s.startsWith("[@set "))
+						s = "[#assign " + s.substring(6);
+					sb.append(s);
+
+					// Remove command
+					lftl.set(i, "");
+				}
+			}
+		}
+		return sb.toString();
 	}
 
 	private static String buildInterview(List<String> lftl) {
