@@ -29,7 +29,7 @@ public class Utils {
 				sb.append("\n");
 			sb.append(String.format("%03d", i + 1));
 			if (between(i + 1, line, endLine))
-				sb.append("# ");
+				sb.append("> ");
 			else
 				sb.append("  ");
 			sb.append(a[i]);

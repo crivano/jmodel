@@ -78,9 +78,9 @@ public class Template {
 			result = freemarkerReposition(result);
 			result = FreemarkerIndent.indent(result);
 			result = result.replaceAll("\\s+\n", "\n");
-			result = result.replace("]\n[@interview]", "]\n\n[@interview]");
-			result = result.replace("]\n[@description]", "]\n\n[@description]");
-			result = result.replace("]\n[@document]", "]\n\n[@document]");
+			result = result.replaceAll("\\]\\s*\\[@interview\\]", "]\n\n[@interview]");
+			result = result.replaceAll("\\]\\s*\\[@description\\]", "]\n\n[@description]");
+			result = result.replaceAll("\\]\\s*\\[@document\\]", "]\n\n[@document]");
 			return result;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -117,33 +117,34 @@ public class Template {
 		Set<String> fields = new HashSet<>();
 		sb.append("[@interview]");
 		String INTERVIEW_COMMANDS[] = new String[] { "[@field ", "[@if ", "[/@if]", "[@for ", "[/@for]" };
-		for (int i = 0; i < lftl.size(); i++) {
-			String s = lftl.get(i);
-			String next = (i < lftl.size() - 1) ? lftl.get(i + 1) : null;
-			for (String prefix : INTERVIEW_COMMANDS) {
 
-				// Skip if field already seen
-				Command cmd = new Command(s);
-				String fieldVarAndIndex = cmd.getFieldVarAndIndex();
-				if (fieldVarAndIndex != null)
-					if (fields.contains(fieldVarAndIndex))
-						continue;
-					else
-						fields.add(fieldVarAndIndex);
+		List<String> l = new ArrayList<>();
+		for (String ftl : lftl)
+			for (String prefix : INTERVIEW_COMMANDS)
+				if (ftl.startsWith(prefix))
+					l.add(ftl);
 
-				// Skip empty IFs and FORs
-				if (s.startsWith("[@if ") && "[/@if]".equals(next)
-						|| s.startsWith("[@for ") && "[/@for]".equals(next)) {
-					i++;
+		for (int i = 0; i < l.size(); i++) {
+			String s = l.get(i);
+			String next = (i < l.size() - 1) ? l.get(i + 1) : null;
+			// Skip if field already seen
+			Command cmd = new Command(s);
+			String fieldVarAndIndex = cmd.getFieldVarAndIndex();
+			if (fieldVarAndIndex != null)
+				if (fields.contains(fieldVarAndIndex))
 					continue;
-				}
+				else
+					fields.add(fieldVarAndIndex);
 
-				if (s.startsWith(prefix)) {
-					sb.append("\n  ");
-					sb.append(s);
-					continue;
-				}
+			// Skip empty IFs and FORs
+			if (s.startsWith("[@if ") && "[/@if]".equals(next)
+					|| s.startsWith("[@for ") && "[/@for]".equals(next)) {
+				i++;
+				continue;
 			}
+
+			sb.append("\n  ");
+			sb.append(s);
 		}
 		sb.append("\n[/@interview]");
 		return sb.toString();
