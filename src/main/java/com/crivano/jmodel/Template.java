@@ -20,6 +20,18 @@ public class Template {
 
 	private static final String MARKDOWN_DESCRIPTION = "<!-- MARKDOWN-DESCRIPTION -->";
 
+	final static Pattern patternFreemarkerRepositionUp = Pattern.compile(
+			"\\s*(?<html>(?:<p>|<tr>\\s*<td>))\\s*(?<freemarker>\\{\\{fm\\}\\}\\[@(?:if|for) .+?\\{\\{\\/fm\\}\\})\\s*",
+			Pattern.MULTILINE);
+
+	final static Pattern patternFreemarkerRepositionDown = Pattern.compile(
+			"\\s*(?<freemarker>\\{\\{fm\\}\\}\\[/@(?:if|for)]\\{\\{\\/fm\\}\\})\\s*(?<html>(?:</p>|</td>\\s*</tr>))\\s*",
+			Pattern.MULTILINE);
+
+	final static Pattern patternFreemarkerEmptyTopLevelMacros = Pattern.compile(
+			"\\[@(?:interview|description|document)\\]\\s*\\[/@(?:interview|description|document)\\]\\s*",
+			Pattern.MULTILINE);
+
 	public static String markdownToFreemarker(String mdDescription, String mdDocument) {
 
 		if (mdDescription == null)
@@ -45,11 +57,18 @@ public class Template {
 		sb.append(buildHead(lftl));
 		sb.append(buildInterview(lftl));
 
-		// Change "campo" to "valor"
-		String PREFIX_CAMPO = "[@field ";
+		// Change "field" to "value"
 		for (int i = 0; i < lftl.size(); i++) {
-			if (lftl.get(i).startsWith(PREFIX_CAMPO)) {
-				lftl.set(i, "[@value " + lftl.get(i).substring(PREFIX_CAMPO.length()));
+			if (lftl.get(i).startsWith(CommandEnum.PREFIX_FIELD)) {
+				lftl.set(i, CommandEnum.PREFIX_VALUE + lftl.get(i).substring(CommandEnum.PREFIX_FIELD.length()));
+			}
+		}
+
+		// Remove "@group" and "/@group"
+		for (int i = 0; i < lftl.size(); i++) {
+			String ftl = lftl.get(i);
+			if (ftl.startsWith(CommandEnum.PREFIX_GROUP_BEGIN) || ftl.startsWith(CommandEnum.PREFIX_GROUP_END)) {
+				lftl.set(i, "");
 			}
 		}
 
@@ -75,6 +94,10 @@ public class Template {
 
 		try {
 			String result = sb.toString();
+
+			// Remove empty @interview, @description ou @document
+			result = patternFreemarkerEmptyTopLevelMacros.matcher(result).replaceAll("");
+
 			result = freemarkerReposition(result);
 			result = FreemarkerIndent.indent(result);
 			result = result.replaceAll("\\s+\n", "\n");
@@ -91,7 +114,7 @@ public class Template {
 		StringBuilder sb = new StringBuilder();
 
 		Set<String> fields = new HashSet<>();
-		String HEAD_COMMANDS[] = new String[] { "[@set " };
+		String HEAD_COMMANDS[] = new String[] { CommandEnum.PREFIX_SET };
 		for (int i = 0; i < lftl.size(); i++) {
 			String s = lftl.get(i);
 			String next = (i < lftl.size() - 1) ? lftl.get(i + 1) : null;
@@ -99,7 +122,7 @@ public class Template {
 
 				if (s.startsWith(prefix)) {
 					sb.append("\n  ");
-					if (s.startsWith("[@set "))
+					if (s.startsWith(CommandEnum.PREFIX_SET))
 						s = "[#assign " + s.substring(6);
 					sb.append(s);
 
@@ -116,11 +139,10 @@ public class Template {
 
 		Set<String> fields = new HashSet<>();
 		sb.append("[@interview]");
-		String INTERVIEW_COMMANDS[] = new String[] { "[@field ", "[@if ", "[/@if]", "[@for ", "[/@for]" };
 
 		List<String> l = new ArrayList<>();
 		for (String ftl : lftl)
-			for (String prefix : INTERVIEW_COMMANDS)
+			for (String prefix : CommandEnum.INTERVIEW_COMMANDS)
 				if (ftl.startsWith(prefix))
 					l.add(ftl);
 
@@ -137,8 +159,8 @@ public class Template {
 					fields.add(fieldVarAndIndex);
 
 			// Skip empty IFs and FORs
-			if (s.startsWith("[@if ") && "[/@if]".equals(next)
-					|| s.startsWith("[@for ") && "[/@for]".equals(next)) {
+			if (CommandEnum.IF_BEGIN.match(s) && CommandEnum.IF_END.match(next)
+					|| CommandEnum.FOR_BEGIN.match(s) && CommandEnum.FOR_END.match(next)) {
 				i++;
 				continue;
 			}
@@ -242,14 +264,6 @@ public class Template {
 		s += template.substring(pointer, template.length());
 		return s;
 	}
-
-	final static Pattern patternFreemarkerRepositionUp = Pattern.compile(
-			"\\s*(?<html>(?:<p>|<tr>\\s*<td>))\\s*(?<freemarker>\\{\\{fm\\}\\}\\[@(?:if|for) .+?\\{\\{\\/fm\\}\\})\\s*",
-			Pattern.MULTILINE);
-
-	final static Pattern patternFreemarkerRepositionDown = Pattern.compile(
-			"\\s*(?<freemarker>\\{\\{fm\\}\\}\\[/@(?:if|for)]\\{\\{\\/fm\\}\\})\\s*(?<html>(?:</p>|</td>\\s*</tr>))\\s*",
-			Pattern.MULTILINE);
 
 	// Acredito que a melhor estratégia aqui seja utilizar o parser para marcar qual
 	// open se relaciona com qual close. Depois, usar uma expressao regular que

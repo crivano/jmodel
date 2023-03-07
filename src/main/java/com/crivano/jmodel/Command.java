@@ -18,7 +18,8 @@ public class Command {
 	private static Pattern patternSplitParams = Pattern.compile(
 			"\\s*(?<name>[a-z][a-z0-9]+)\\s*=\\s*(?<value>.+?)\\s*(?=$|[a-z][a-z0-9]+\\s*=)");
 
-	private static Set<String> commands = new HashSet<>(Arrays.asList("field", "print", "if", "/if", "for", "/for", "set"));
+	private static Set<String> commands = new HashSet<>(
+			Arrays.asList("field", "print", "if", "/if", "for", "/for", "set"));
 
 	String command;
 	String expr;
@@ -34,14 +35,17 @@ public class Command {
 			params = Utils.sorn(m.group("params"));
 
 			if (command != null) {
-				if (commands.contains(command)) {
-					if (command.startsWith("/"))
-						command = "/@" + command.substring(1);
-					else
-						command = "@" + command;
+				CommandEnum ce = CommandEnum.getCommandFromName(command);
+				if (ce != null) {
+					command = ce.ftlCommand;
+				} else if (command.equals(command.toUpperCase())) {
+					ce = CommandEnum.PRINT;
+					expr = command;
+					command = ce.ftlCommand;
 				} else {
+					ce = CommandEnum.FIELD;
 					var = command;
-					command = "@field";
+					command = ce.ftlCommand;
 					expr = null;
 					params = "var='" + this.var + "'" + (params != null ? " " + params : "");
 				}
@@ -83,7 +87,7 @@ public class Command {
 	}
 
 	public String getFieldVarAndIndex() {
-		if (!"@field".equals(command) || !mapParams.containsKey("var"))
+		if (!CommandEnum.FIELD.ftlCommand.equals(command) || !mapParams.containsKey("var"))
 			return null;
 		String s = command + "|" + mapParams.get("var");
 		if (mapParams.containsKey("index"))
@@ -100,7 +104,8 @@ public class Command {
 	}
 
 	public boolean isOpening() {
-		return "@if".equals(command) || "@for".equals(command);
+		return CommandEnum.GROUP_BEGIN.ftlCommand.equals(command) || CommandEnum.IF_BEGIN.ftlCommand.equals(command)
+				|| CommandEnum.FOR_BEGIN.ftlCommand.equals(command);
 	}
 
 	@Override
@@ -123,7 +128,7 @@ public class Command {
 			sb.append(params);
 		}
 
-		if ("@for".equals(command))
+		if (CommandEnum.FOR_BEGIN.ftlCommand.equals(command))
 			sb.append(" ; index");
 		sb.append(isSelfContained() ? "/]" : "]");
 		return sb.toString();

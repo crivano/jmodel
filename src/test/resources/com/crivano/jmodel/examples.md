@@ -263,6 +263,44 @@ Name again: {field var='name' index=index}
 [/@document]
 ```
 
+### Constant
+
+If the variable name is all in upper case, then it is treated as an constant, and a ```print``` command is issued:
+
+```Markdown Document
+Hi {SIGNEE_NAME}!
+```
+
+```FreeMarker
+[@document]
+  <p>Hi
+    [@print expr=(SIGNEE_NAME)/]!</p>
+[/@document]
+```
+
+### Grouping fields in the interview
+
+A ```@group``` command may be used to organize and line up fields in the ```@interview``` section. A group may be used to present a caption or a warning:
+
+```Markdown Document
+{group title='Identification' warning='Your personal data is secure.'}
+Hi {name}!
+{/group}
+```
+
+```FreeMarker
+[@interview]
+  [@group title='Identification' warning='Your personal data is secure.']
+    [@field var='name'/]
+  [/@group]
+[/@interview]
+
+[@document]
+  <p>Hi
+    [@value var='name'/]!</p>
+[/@document]
+```
+
 ### Simple model with variable assigns
 
 In certain situations it will be necessary to set global variables that can be used to customize the ```@document``` macro. For instance,
