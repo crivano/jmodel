@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.vladsch.flexmark.ext.tables.TablesExtension;
@@ -17,8 +18,8 @@ import com.vladsch.flexmark.util.data.MutableDataSet;
 public class Template {
 
 	private static final String MARKDOWN_DOCUMENT = "<!-- MARKDOWN-DOCUMENT -->";
-
 	private static final String MARKDOWN_DESCRIPTION = "<!-- MARKDOWN-DESCRIPTION -->";
+	private static final String MARKDOWN_HOOK = "<!-- MARKDOWN-HOOK -->";
 
 	final static Pattern patternFreemarkerRepositionUp = Pattern.compile(
 			"\\s*(?<html>(?:<p>|<tr>\\s*<td>))\\s*(?<freemarker>\\{\\{fm\\}\\}\\[@(?:if|for) .+?\\{\\{\\/fm\\}\\})\\s*",
@@ -32,15 +33,43 @@ public class Template {
 			"\\[@(?:interview|description|document)\\]\\s*\\[/@(?:interview|description|document)\\]\\s*",
 			Pattern.MULTILINE);
 
-	public static String markdownToFreemarker(String mdDescription, String mdDocument) {
+	final static Pattern patternFreemarkerDescriptionWithin = Pattern.compile(
+			"\\{description\\}(?<description>.+)\\{/description\\}\\s*",
+			Pattern.MULTILINE | Pattern.DOTALL);
+
+	final static Pattern patternFreemarkerHookWithin = Pattern.compile(
+			"(?<hook>\\{hook ?(?<params>[^}]*)\\}.+\\{/hook\\})\\s*",
+			Pattern.MULTILINE | Pattern.DOTALL);
+
+	public static String markdownToFreemarker(String mdDescription, String mdDocument, String mdHook) {
 
 		if (mdDescription == null)
 			mdDescription = "";
 		if (mdDocument == null)
 			mdDocument = "";
+		if (mdHook == null)
+			mdHook = "";
+
+		// Remove description from within the document markdown
+		Matcher mDescr = patternFreemarkerDescriptionWithin.matcher(mdDocument);
+		while (mDescr.find()) {
+			String descr = Utils.sorn(mDescr.group("description"));
+			if (descr != null)
+				mdDescription += descr;
+		}
+		mdDocument = mDescr.replaceAll("");
+
+		// Remove description from within the document markdown
+		Matcher mHook = patternFreemarkerHookWithin.matcher(mdDocument);
+		while (mHook.find()) {
+			String hook = Utils.sorn(mHook.group("hook"));
+			if (hook != null)
+				mdHook += hook;
+		}
+		mdDocument = mHook.replaceAll("");
 
 		String input = MARKDOWN_DESCRIPTION + "\n\n" + mdDescription + "\n\n" + MARKDOWN_DOCUMENT + "\n\n"
-				+ mdDocument;
+				+ mdDocument + "\n\n" + MARKDOWN_HOOK + "\n\n" + mdHook;
 
 		String mdWithCommandsInFreemarker = processCommands(input, (cmd) -> {
 			String comando = cmd.command;
@@ -74,22 +103,32 @@ public class Template {
 
 		String ftlInMarkdown = FreemarkerIndent.convertHtml2Ftl(txtWithPlaceholders, lftl);
 
-		String ftlInHtml = markdownToHtml(ftlInMarkdown);
+		// The hooks should not be subjected to que markdown parser
+		String[] markdownSplit = Utils.sorn(ftlInMarkdown).split(MARKDOWN_HOOK);
+		String ftlInHtml = markdownToHtml(markdownSplit[0]) + "\n\n" + MARKDOWN_HOOK + "\n\n"
+				+ (markdownSplit.length == 1 ? "" : markdownSplit[1]);
 
 		// Split de HTML to identify the description and the document
 		String html[] = ftlInHtml.split(MARKDOWN_DOCUMENT);
-		html[0] = Utils.sorn(html[0].replace(MARKDOWN_DESCRIPTION, ""));
-		html[1] = Utils.sorn(html[1]);
+		String htmlDescription = Utils.sorn(html[0].replace(MARKDOWN_DESCRIPTION, ""));
+		html = Utils.sorn(html[1]).split(MARKDOWN_HOOK);
+		String htmlDocument = Utils.sorn(html[0].replace(MARKDOWN_DOCUMENT, ""));
+		String htmlHook = (html.length == 1 ? "" : Utils.sorn(html[1]));
 
-		if (html[0] != null) {
+		if (htmlDescription != null) {
 			sb.append("\n\n[@description]\n");
-			sb.append(html[0]);
+			sb.append(htmlDescription);
 			sb.append("[/@description]");
 		}
-		if (html[1] != null) {
+		if (htmlDocument != null) {
 			sb.append("\n\n[@document]\n");
-			sb.append(html[1]);
+			sb.append(htmlDocument);
 			sb.append("[/@document]");
+		}
+
+		if (htmlHook != null) {
+			sb.append("\n\n");
+			sb.append(htmlHook);
 		}
 
 		try {
@@ -104,6 +143,7 @@ public class Template {
 			result = result.replaceAll("\\]\\s*\\[@interview\\]", "]\n\n[@interview]");
 			result = result.replaceAll("\\]\\s*\\[@description\\]", "]\n\n[@description]");
 			result = result.replaceAll("\\]\\s*\\[@document\\]", "]\n\n[@document]");
+			result = result.replaceAll("\\]\\s*\\[@hook", "]\n\n[@hook");
 			return result;
 		} catch (IOException e) {
 			throw new RuntimeException(e);

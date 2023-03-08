@@ -96,7 +96,7 @@ public class ExamplesTest {
 
 	@Test
 	public void test() {
-		String converted = Template.markdownToFreemarker(mdDescription, mdDocument);
+		String converted = Template.markdownToFreemarker(mdDescription, mdDocument, null);
 		try {
 			String suffix = "\n\n---\nat " + filenameAndLineNumber;
 			assertEquals(fm + suffix, converted + suffix);

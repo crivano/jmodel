@@ -10,6 +10,10 @@ public enum CommandEnum {
 	IF_END("/if", "/@if", false, false, "[", "]"),
 	FOR_BEGIN("for", "@for", true, true, "[", "]"),
 	FOR_END("/for", "/@for", false, false, "[", "]"),
+	DESCRIPTION_BEGIN("description", "@description", false, true, "[", "]"),
+	DESCRIPTION_END("/description", "/@description", false, false, "[", "]"),
+	HOOK_BEGIN("hook", "@hook", true, true, "[", "]"),
+	HOOK_END("/hook", "/@hook", false, false, "[", "]"),
 	SET("set", "@set", true, true, "[", "/]");
 
 	String command;

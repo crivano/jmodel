@@ -105,7 +105,9 @@ public class Command {
 
 	public boolean isOpening() {
 		return CommandEnum.GROUP_BEGIN.ftlCommand.equals(command) || CommandEnum.IF_BEGIN.ftlCommand.equals(command)
-				|| CommandEnum.FOR_BEGIN.ftlCommand.equals(command);
+				|| CommandEnum.FOR_BEGIN.ftlCommand.equals(command)
+				|| CommandEnum.DESCRIPTION_BEGIN.ftlCommand.equals(command)
+				|| CommandEnum.HOOK_BEGIN.ftlCommand.equals(command);
 	}
 
 	@Override

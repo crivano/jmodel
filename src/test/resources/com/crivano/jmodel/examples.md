@@ -206,7 +206,7 @@ A For statement exemple that asks the number of people, then the name of each pe
 Number of people: {field var='num' options='1;2;3;4;5' refresh='num'}
 
 {for num depend='num'}
-Name: {field var='name' index=index}
+Name: {field var='name'}
 {/for}
 ```
 
@@ -214,7 +214,7 @@ Name: {field var='name' index=index}
 [@interview]
   [@field var='num' options='1;2;3;4;5' refresh='num'/]
   [@for expr=(num) depend='num' ; index]
-    [@field var='name' index=index/]
+    [@field var='name'/]
   [/@for]
 [/@interview]
 
@@ -223,7 +223,7 @@ Name: {field var='name' index=index}
     [@value var='num' options='1;2;3;4;5' refresh='num'/]</p>
   [@for expr=(num) depend='num' ; index]
     <p>Name:
-      [@value var='name' index=index/]</p>
+      [@value var='name'/]</p>
   [/@for]
 [/@document]
 ```
@@ -358,4 +358,62 @@ Hi {name}!
   <p>Hi
     [@value var='name'/]!</p>
 [/@document]
+```
+
+### Description in the same template as the document
+
+Sometimes it is better to have the description within the same template. It's possible by using the ```{description}``` command. 
+
+```Markdown Document
+{description}
+{kind} document for {name}
+{/description}
+
+Hi {name}!
+```
+
+```FreeMarker
+[@interview]
+  [@field var='kind'/]
+  [@field var='name'/]
+[/@interview]
+
+[@description]
+  <p>
+    [@value var='kind'/] document for
+    [@value var='name'/]</p>
+[/@description]
+
+[@document]
+  <p>Hi
+    [@value var='name'/]!</p>
+[/@document]
+```
+
+### Hooks
+
+By using the ```{hook}``` command, it is possible do add a freemarker code that will neither be part of the description nor of the document. It's useful for situations when the model is used for
+doing validations, initializing the workflow and so on. 
+
+```Markdown Document
+Hi {name}!
+
+{hook kind='AFTER_SIGN'}
+[#assign wf=workflow.initialize('My WF Definition')/]
+{/hook}
+```
+
+```FreeMarker
+[@interview]
+  [@field var='name'/]
+[/@interview]
+
+[@document]
+  <p>Hi
+    [@value var='name'/]!</p>
+[/@document]
+
+[@hook kind='AFTER_SIGN']
+  [#assign wf=workflow.initialize('My WF Definition')/]
+[/@hook]
 ```

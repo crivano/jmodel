@@ -26,7 +26,7 @@ public class TemplateTest extends TestCase {
 	}
 
 	public void testOneField() throws Exception {
-		String s = Template.markdownToFreemarker(null, "Hi [@field var='name'/]!");
+		String s = Template.markdownToFreemarker(null, "Hi [@field var='name'/]!", null);
 		assertEquals(""
 				+ "[@interview]\n"
 				+ "  [@field var='name'/]\n"
