@@ -304,16 +304,16 @@ Hi {name}!
 ### Simple model with variable assigns
 
 In certain situations it will be necessary to set global variables that can be used to customize the ```@document``` macro. For instance,
-one may use a variable to choose a special format for the document, like Memorandum or Letter.
+one may use a variable to choose a special style for the document, like Memorandum or Letter.
 
 ```Markdown Document
-{set format='LETTER'}
+{set STYLE='LETTER'}
 
 Hi {name}!
 ```
 
 ```FreeMarker
-[#assign format='LETTER'/]
+[#assign STYLE='LETTER'/]
 
 [@interview]
   [@field var='name'/]
@@ -325,6 +325,17 @@ Hi {name}!
 [/@document]
 ```
 
+Some variables are defined as part of the JModel specification:
+
+Variable|Objective
+---|---
+STYLE|Defines the style of the document but the possible values shoud be defined by the application
+PAGE_SIZE|Defines the size of the paper and the default value is 'A4'
+PAGE_ORIENTATION|Defines the page orientation, default value is 'portrait' but can also be set to 'landscape'
+MARGIN_LEFT|Defines the left margin, default value is '3cm'
+MARGIN_RIGHT|Defines the right margin, default value is '2cm'
+MARGIN_TOP|Defines the top margin, default value is '1cm'
+MARGIN_BOTTOM|Defines the bottom margin, default value is '2cm'
 
 ## Models With Description
 
@@ -392,13 +403,13 @@ Hi {name}!
 
 ### Hooks
 
-By using the ```{hook}``` command, it is possible do add a freemarker code that will neither be part of the description nor of the document. It's useful for situations when the model is used for
+By using the ```{hook}``` command, it is possible do add a freemarker code that will run in specific moments of the document's life cicle. It's useful for situations when the model is used for
 doing validations, initializing the workflow and so on. 
 
 ```Markdown Document
 Hi {name}!
 
-{hook kind='AFTER_SIGN'}
+{hook 'AFTER_SIGN'}
 [#assign wf=workflow.initialize('My WF Definition')/]
 {/hook}
 ```
@@ -413,7 +424,16 @@ Hi {name}!
     [@value var='name'/]!</p>
 [/@document]
 
-[@hook kind='AFTER_SIGN']
+[@hook expr=('AFTER_SIGN')]
   [#assign wf=workflow.initialize('My WF Definition')/]
 [/@hook]
 ```
+
+JModel defines some possible values for the ```hook``` parameter:
+
+Parameter|Life Cycle Event
+---|---
+BEFORE_SAVE|Just before the draft is saved
+AFTER_DRAFT|When the draft is ready for signing
+BEFORE_SIGN|Just before the signature is registered
+AFTER_SIGN|Just after the signature is registered
