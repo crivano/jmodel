@@ -1,6 +1,6 @@
 # Examples
 
-One of the best ways to understad the template engine is to see many examples of what can be accomplished.
+One of the best ways to understand the template engine is to see many examples of what can be accomplished.
 
 ### Single auto-field
 
@@ -260,6 +260,56 @@ Name again: {field var='name' index=index}
     <p>Name again:
       [@value var='name' index=index/]</p>
   [/@for]
+[/@document]
+```
+
+
+### For repositioned
+
+A For statement that is repositioned to outside of a table row:
+
+```Markdown
+Number of people: {field var='num' options='1;2;3;4;5' refresh='num'}
+
+|Name|Gender|Age|
+|----|------|---|
+|{for num depend='num'}{field var='name'}|{field var='gender'}|{field var='age'}{/for}|
+```
+
+```FreeMarker
+[@interview]
+  [@field var='num' options='1;2;3;4;5' refresh='num'/]
+  [@for expr=(num) depend='num' ; index]
+    [@field var='name'/]
+    [@field var='gender'/]
+    [@field var='age'/]
+  [/@for]
+[/@interview]
+
+[@document]
+  <p>Number of people:
+    [@value var='num' options='1;2;3;4;5' refresh='num'/]</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Gender</th>
+        <th>Age</th>
+      </tr>
+    </thead>
+    <tbody>
+      [@for expr=(num) depend='num' ; index]
+        <tr>
+          <td>
+            [@value var='name'/]</td>
+          <td>
+            [@value var='gender'/]</td>
+          <td>
+            [@value var='age'/]</td>
+        </tr>
+      [/@for]
+    </tbody>
+  </table>
 [/@document]
 ```
 

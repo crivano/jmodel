@@ -3,7 +3,7 @@
 
 	<groupId>com.crivano</groupId>
 	<artifactId>jmodel</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 	<name>JModel</name>
 	<description>Java templates with Markdown and Freemarker</description>
 	<packaging>jar</packaging>

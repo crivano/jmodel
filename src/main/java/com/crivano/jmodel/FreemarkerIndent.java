@@ -220,7 +220,7 @@ public class FreemarkerIndent {
 	}
 
 	protected static String tidy(String s) throws UnsupportedEncodingException, IOException {
-		Parser parser = Parser.htmlParser();
+		Parser parser = Parser.xmlParser();
 		parser.settings(new ParseSettings(true, true));
 		Document document = parser.parseInput(s, "");
 
