@@ -31,6 +31,8 @@ Will be converted to a Freemarker/HTML code like that:
 [/@document]
 ```
 
+More examples can be found [here](https://github.com/crivano/jmodel/blob/main/src/test/resources/com/crivano/jmodel/examples.md).
+
 Building
 ====
 
