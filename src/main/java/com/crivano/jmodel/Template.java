@@ -22,7 +22,7 @@ public class Template {
 	private static final String MARKDOWN_HOOK = "<!-- MARKDOWN-HOOK -->";
 
 	final static Pattern patternFreemarkerRepositionUp = Pattern.compile(
-			"\\s*(?<html>(?:<p>|<tr>\\s*<td>))\\s*(?<freemarker>\\{\\{fm\\}\\}\\[@(?:if|for) .+?\\{\\{\\/fm\\}\\})\\s*",
+			"\\s*(?<html>(?:<p>|<tr>\\s*<td(?:\\s+align=\\\"[a-z]+\\\")?>))\\s*(?<freemarker>\\{\\{fm\\}\\}\\[@(?:if|for) .+?\\{\\{\\/fm\\}\\})\\s*",
 			Pattern.MULTILINE);
 
 	final static Pattern patternFreemarkerRepositionDown = Pattern.compile(

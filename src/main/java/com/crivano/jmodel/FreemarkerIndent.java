@@ -222,7 +222,7 @@ public class FreemarkerIndent {
 	protected static String tidy(String s) throws UnsupportedEncodingException, IOException {
 		Parser parser = Parser.xmlParser();
 		parser.settings(new ParseSettings(true, true));
-		Document document = parser.parseInput(s, "");
+		Document document = parser.parseInput("<html>\n<body>\n" + s + "\n</body>\n</html>", "");
 
 //	    final Document document = Jsoup.parse(s);
 		document.outputSettings().prettyPrint(true);
@@ -236,7 +236,7 @@ public class FreemarkerIndent {
 		List<String> lftl = new ArrayList<>();
 		s = convertFtl2Html(s, lftl);
 
-		s = "<body>" + s + "</body>";
+//		s = "<html><body>" + s + "</body></html>";
 
 		String sResult = tidy(s);
 //		sResult = bodyOnly(sResult);
