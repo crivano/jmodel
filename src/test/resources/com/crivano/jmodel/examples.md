@@ -272,7 +272,7 @@ A For statement that is repositioned to outside of a table row:
 Number of people: {field var='num' options='1;2;3;4;5' refresh='num'}
 
 |Name|Gender|Age|
-|----|------|---|
+|:---|------|--:|
 |{for num depend='num'}{field var='name'}|{field var='gender'}|{field var='age'}{/for}|
 ```
 
@@ -292,71 +292,19 @@ Number of people: {field var='num' options='1;2;3;4;5' refresh='num'}
   <table>
     <thead>
       <tr>
-        <th>Name</th>
+        <th align="left">Name</th>
         <th>Gender</th>
-        <th>Age</th>
+        <th align="right">Age</th>
       </tr>
     </thead>
     <tbody>
       [@for expr=(num) depend='num' ; index]
         <tr>
-          <td>
+          <td align="left">
             [@value var='name'/]</td>
           <td>
             [@value var='gender'/]</td>
-          <td>
-            [@value var='age'/]</td>
-        </tr>
-      [/@for]
-    </tbody>
-  </table>
-[/@document]
-```
-
-### For repositioned 2
-
-A For statement that is repositioned to outside of a table row:
-
-```Markdown
-Total de fornecedores consultados: {quantidadeDeFornecedoresConsultados options='1;2;3;4;5;6;7;8;9;10' title='Total de Fornecedores Consultados' refresh='quantidadeDeFornecedoresConsultados' hint='Informar a quantidade de fornecedores consultados, ainda que tenham declinado em fornecer a proposta ou mesmo não tenham respondido aos e-mails (anexar todas as consultas e respostas a este Mapa). A quantidade mínima de propostas obtidas é de 3, porém, quanto mais fornecedores pesquisados, maior é a tendência de obtenção de melhores preços.'}
-
-A pesquisa de preços resultou na seleção do fornecedor {nomeFornecedorSelecionado title='Fornecedor Selecionado' col='col-6'}, CNPJ {cnpjFornecedorSelecionado title='CNPJ do Fornecedor Selecionado' col='col-6'}, pois apresentou o menor valor pesquisado.
-
-|Fornecedor consultado|Data da Pesquisa|Valor Pesquisado|
-|:--------------------|:--------------:|---------------:|
-|{for quantidadeDeFornecedoresConsultados depend='quantidadeDeFornecedoresConsultados'}{nomeFornecedor title=_index+') Fornecedor Consultado' col='col-4'}|{dtPesquisa title='Data da Pesquisa' col='col-4'}|{valPesquisado title='Valor Pesquisado' col='col-4'}{/for}|
-
-```
-
-```FreeMarker
-[@interview]
-  [@field var='num' options='1;2;3;4;5' refresh='num'/]
-  [@for expr=(num) depend='num' ; index]
-    [@field var='name'/]
-    [@field var='gender'/]
-    [@field var='age'/]
-  [/@for]
-[/@interview]
-
-[@document]
-  <p>Number of people:
-    [@value var='num' options='1;2;3;4;5' refresh='num'/]</p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Gender</th>
-        <th>Age</th>
-      </tr>
-    </thead>
-    <tbody>
-      [@for expr=(num) depend='num' ; index]
-        <tr>
-          <td>
-            [@value var='name'/]</td>
-          <td>
-            [@value var='gender'/]</td>
-          <td>
+          <td align="right">
             [@value var='age'/]</td>
         </tr>
       [/@for]
