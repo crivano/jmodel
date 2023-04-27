@@ -2,11 +2,13 @@ package com.crivano.jmodel;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Command {
 	private static Pattern patternTemplateCommand = Pattern.compile(
@@ -125,6 +127,23 @@ public class Command {
 			sb.append(expr);
 			sb.append(")");
 		}
+
+		// Add an automatic "depend" based on a expr's shallow variable detection
+		if (CommandEnum.FOR_BEGIN.ftlCommand.equals(command) || CommandEnum.IF_BEGIN.ftlCommand.equals(command)) {
+			if (expr != null && !expr.trim().isEmpty()) {
+				if (params == null || !params.contains("depend=")) {
+					List<String> l = Utils.getVariableNames(expr);
+					if (l != null && l.size() > 0) {
+						String depend = "depend='" + l.stream().collect(Collectors.joining(";")) + "'";
+						if (params == null)
+							params = depend;
+						else
+							params = depend + " " + params;
+					}
+				}
+			}
+		}
+
 		if (params != null) {
 			sb.append(" ");
 			sb.append(params);

@@ -146,6 +146,30 @@ You {if country == 'Brazil' depend='country'}didn't{/if} win the WorldCup!
 [/@document]
 ```
 
+### If without the refresh and the depend parameters
+
+An If statement that does not require repositioning:
+
+```Markdown
+Country: {field var='country' options='Brazil;Argentina'}
+
+You {if country == 'Brazil'}didn't{/if} win the WorldCup!
+```
+
+```FreeMarker
+[@interview]
+  [@field var='country' options='Brazil;Argentina'/]
+[/@interview]
+
+[@document]
+  <p>Country:
+    [@value var='country' options='Brazil;Argentina'/]</p>
+  <p>You
+    [@if expr=(country == 'Brazil') depend='country']didn't
+    [/@if] win the WorldCup!</p>
+[/@document]
+```
+
 ### If repositioned
 
 If statement that is repositioned to be outside of a paragraph:
