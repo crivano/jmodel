@@ -204,19 +204,19 @@ Country: {field var='country' options='Brazil;Argentina' refresh='country'}
 Duplicated fields should be omitted from the interview:
 
 ```Markdown
-I, {name}, born in ...
+I, {name required=true}, born in ...
 
 Signed by: {name}
 ```
 
 ```FreeMarker
 [@interview]
-  [@field var='name'/]
+  [@field var='name' required=true/]
 [/@interview]
 
 [@document]
   <p>I,
-    [@value var='name'/], born in ...</p>
+    [@value var='name' required=true/], born in ...</p>
   <p>Signed by:
     [@value var='name'/]</p>
 [/@document]

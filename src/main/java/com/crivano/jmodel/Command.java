@@ -15,7 +15,7 @@ public class Command {
 			"\\{(?<command>/?[a-zA-Z][a-zA-Z0-9_]*)?(?<expr>.*?)(?<params>\\s*[a-zA-Z0-9_]+\\s*=\\s*[^=].*)?\\}$");
 
 	private static Pattern patternFreemarkerCommand = Pattern.compile(
-			"^\\[(?<command>(?>/?@[a-z]+))(?<expr>\\s+.*?)?(?<params>\\s*[a-zA-Z0-9_]+\\s*=\\s*[^=].*)?\\]$");
+			"^\\[(?<command>(?>/?@[a-z]+))(?<expr>\\s+.*?)?(?<params>\\s*[a-zA-Z0-9_]+\\s*=\\s*[^=].*?)?/?]$");
 
 	private static Pattern patternSplitParams = Pattern.compile(
 			"\\s*(?<name>[a-z][a-z0-9]+)\\s*=\\s*(?<value>.+?)\\s*(?=$|[a-z][a-z0-9]+\\s*=)");
@@ -83,7 +83,7 @@ public class Command {
 				String name = Utils.sorn(matcher.group("name"));
 				String value = Utils.sorn(matcher.group("value"));
 				if (name != null && value != null)
-					mapParams.put(name, value);
+					mapParams.put(name.trim(), value.trim());
 			}
 		}
 	}
