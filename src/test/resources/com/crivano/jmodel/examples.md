@@ -511,3 +511,27 @@ BEFORE_SAVE|Just before the draft is saved
 AFTER_DRAFT|When the draft is ready for signing
 BEFORE_SIGN|Just before the signature is registered
 AFTER_SIGN|Just after the signature is registered
+
+
+## Other Tests
+
+### Dollar sign
+
+Use of dollar sign:
+
+```Markdown
+Hi {vle default='$100'}!
+```
+
+```FreeMarker
+[@interview]
+  [@field var='vle' default='$100'/]
+[/@interview]
+
+[@document]
+  <p>Hi
+    [@value var='vle' default='$100'/]!</p>
+[/@document]
+
+```
+

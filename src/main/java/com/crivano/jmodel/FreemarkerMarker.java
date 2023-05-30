@@ -142,5 +142,17 @@ public class FreemarkerMarker {
 		matcher.appendTail(output);
 		return output.toString();
 	}
+	
+	public static String quote(String s) {
+		if (s == null)
+			return null;
+		return s.replace("$", "|dollar-sign|");
+	}
+
+	public static String unquote(String s) {
+		if (s == null)
+			return null;
+		return s.replace("|dollar-sign|", "$");
+	}
 
 }

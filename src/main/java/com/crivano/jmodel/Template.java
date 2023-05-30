@@ -313,10 +313,12 @@ public class Template {
 	public static String freemarkerReposition(String s) {
 		FreemarkerMarker fmm = new FreemarkerMarker(s);
 		s = fmm.addMarks();
+		s = fmm.quote(s);
 		final String subst = "$2$1";
 
 		s = patternFreemarkerRepositionUp.matcher(s).replaceAll(subst);
 		s = patternFreemarkerRepositionDown.matcher(s).replaceAll(subst);
-		return FreemarkerMarker.removeMarks(s);
+		s = FreemarkerMarker.removeMarks(s);
+		return fmm.unquote(s);
 	}
 }
