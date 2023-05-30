@@ -532,6 +532,5 @@ Hi {vle default='$100'}!
   <p>Hi
     [@value var='vle' default='$100'/]!</p>
 [/@document]
-
 ```
 
